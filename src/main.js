@@ -50,7 +50,7 @@ function renderNetworkBanner(s) {
   if (!show) return;
 
   el.networkBannerText.textContent =
-    `You’re on “${s.chainName}” (chain ID ${s.chainId}), which this app doesn’t support. ` +
+    `You are on “${s.chainName}” (chain ID ${s.chainId}), which this app doesn’t support. ` +
     `Switch to one of: ${supportedChainNames().join(", ")}.`;
 
   for (const [id, chain] of Object.entries(SUPPORTED_CHAINS)) {

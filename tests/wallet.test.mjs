@@ -180,17 +180,22 @@ test("updates on network change and flags unsupported networks", async () => {
   const mm = createMockProvider({ chainId: "0x1" });
   await start(mm);
   await wallet.connect();
-  assert.equal(wallet.getState().chainName, "Ethereum Mainnet");
+  assert.equal(wallet.getState().chainName, "Ethereum");
 
   mm.emit("chainChanged", "0x89"); // Polygon: supported
   await settle();
   assert.equal(wallet.getState().chainId, 137);
   assert.equal(wallet.getState().supported, true);
 
-  mm.emit("chainChanged", "0x38"); // BNB Smart Chain: known but unsupported
+  mm.emit("chainChanged", "0x38"); // BNB Chain: supported
   await settle();
   assert.equal(wallet.getState().chainId, 56);
-  assert.equal(wallet.getState().chainName, "BNB Smart Chain");
+  assert.equal(wallet.getState().chainName, "BNB Chain");
+  assert.equal(wallet.getState().supported, true);
+
+  mm.emit("chainChanged", "0xa86a"); // Avalanche: known but unsupported
+  await settle();
+  assert.equal(wallet.getState().chainName, "Avalanche C-Chain");
   assert.equal(wallet.getState().supported, false);
 
   mm.emit("chainChanged", "0x270f"); // 9999: completely unknown

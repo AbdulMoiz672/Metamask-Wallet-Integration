@@ -18,7 +18,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #161513;
+    --bg: #000000;
     --card: #211f1c;
     --text: #f0ece4;
     --muted: #a39d92;
@@ -162,6 +162,11 @@ dd { margin: 0; min-width: 0; }
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+#connect-btn:hover:not(:disabled) {
+  background: #07b18d;
+  border-color: #07a6a9;
 }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .btn:focus-visible,

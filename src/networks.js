@@ -9,15 +9,51 @@
  * Sepolia are built into MetaMask, so they need none.
  */
 export const SUPPORTED_CHAINS = {
-  1: { name: "Ethereum Mainnet", testnet: false },
+  1: { name: "Ethereum", testnet: false },
+  10: {
+    name: "OP Mainnet",
+    testnet: false,
+    addParams: {
+      rpcUrls: ["https://mainnet.optimism.io"],
+      nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+      blockExplorerUrls: ["https://optimistic.etherscan.io"],
+    },
+  },
+  56: {
+    name: "BNB Chain",
+    testnet: false,
+    addParams: {
+      rpcUrls: ["https://bsc-dataseed.bnbchain.org"],
+      nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
+      blockExplorerUrls: ["https://bscscan.com"],
+    },
+  },
   11155111: { name: "Sepolia Testnet", testnet: true },
   137: {
-    name: "Polygon Mainnet",
+    name: "Polygon",
     testnet: false,
     addParams: {
       rpcUrls: ["https://polygon-rpc.com"],
       nativeCurrency: { name: "POL", symbol: "POL", decimals: 18 },
       blockExplorerUrls: ["https://polygonscan.com"],
+    },
+  },
+  143: {
+    name: "Monad",
+    testnet: false,
+    addParams: {
+      rpcUrls: ["https://rpc.monad.xyz"],
+      nativeCurrency: { name: "Monad", symbol: "MON", decimals: 18 },
+      blockExplorerUrls: ["https://monadscan.com"],
+    },
+  },
+  5042: {
+    name: "Arc",
+    testnet: false,
+    addParams: {
+      rpcUrls: ["https://rpc.mainnet.arc.io"],
+      nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+      blockExplorerUrls: ["https://explorer.arc.io"],
     },
   },
   8453: {
@@ -29,15 +65,29 @@ export const SUPPORTED_CHAINS = {
       blockExplorerUrls: ["https://basescan.org"],
     },
   },
+  42161: {
+    name: "Arbitrum One",
+    testnet: false,
+    addParams: {
+      rpcUrls: ["https://arb1.arbitrum.io/rpc"],
+      nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+      blockExplorerUrls: ["https://arbiscan.io"],
+    },
+  },
+  59144: {
+    name: "Linea",
+    testnet: false,
+    addParams: {
+      rpcUrls: ["https://rpc.linea.build"],
+      nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+      blockExplorerUrls: ["https://lineascan.build"],
+    },
+  },
 };
 
 /** Friendly names for well-known chains we do NOT support (used in messages only). */
 const KNOWN_CHAIN_NAMES = {
-  10: "OP Mainnet",
-  56: "BNB Smart Chain",
-  42161: "Arbitrum One",
   43114: "Avalanche C-Chain",
-  59144: "Linea",
   80002: "Polygon Amoy Testnet",
   84532: "Base Sepolia Testnet",
   1337: "Local development chain",
