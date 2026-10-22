@@ -1,0 +1,23 @@
+{
+  "name": "metamask-wallet-integration",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal web app that connects to MetaMask with ethers.js: connect, display wallet info, disconnect, react to account/network changes.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test tests/wallet.test.mjs"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "dependencies": {
+    "ethers": "^6.13.0"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  },
+  "license": "MIT"
+}
