@@ -175,8 +175,8 @@ dd { margin: 0; min-width: 0; }
   transition: background-color 150ms ease, border-color 150ms ease;
 }
 #disconnect-btn:hover:not(:disabled) {
-  background: #b91c1c;
-  border-color: #b91c1c;
+  background: #711408;
+  border-color: #711408;
 }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .btn:focus-visible,
