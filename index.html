@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MetaMask Wallet Integration</title>
+  </head>
+  <body>
+    <main class="card">
+      <header class="card-header">
+        <h1>MetaMask Wallet</h1>
+        <span id="status-pill" class="pill" data-state="busy">Checking…</span>
+      </header>
+
+      <div id="error-banner" class="banner banner-error" role="alert" hidden></div>
+
+      <div id="network-banner" class="banner banner-warn" role="alert" hidden>
+        <p id="network-banner-text"></p>
+        <div id="switch-buttons" class="switch-buttons"></div>
+      </div>
+
+      <dl class="info">
+        <div class="row">
+          <dt>Status</dt>
+          <dd id="status-text">—</dd>
+        </div>
+        <div class="row">
+          <dt>Address</dt>
+          <dd>
+            <span id="address" class="mono">—</span>
+            <button id="copy-btn" class="link-btn" type="button" hidden>Copy</button>
+          </dd>
+        </div>
+        <div class="row">
+          <dt>Network</dt>
+          <dd id="network">—</dd>
+        </div>
+        <div class="row">
+          <dt>Chain ID</dt>
+          <dd id="chain-id" class="mono">—</dd>
+        </div>
+      </dl>
+
+      <div class="actions">
+        <button id="connect-btn" class="btn btn-primary" type="button">Connect Wallet</button>
+        <button id="disconnect-btn" class="btn" type="button" hidden>Disconnect</button>
+      </div>
+
+      <p id="install-hint" class="hint" hidden>
+        MetaMask isn’t installed.
+        <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer"
+          >Get MetaMask</a
+        >, then reload this page.
+      </p>
+
+      <section class="log-section">
+        <h2>Activity log</h2>
+        <ol id="log" class="log" aria-live="polite"></ol>
+      </section>
+
+      <footer class="footer">
+        This app never asks for, sees, or stores your private key or seed phrase.
+      </footer>
+    </main>
+    <noscript>This demo needs JavaScript enabled.</noscript>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
