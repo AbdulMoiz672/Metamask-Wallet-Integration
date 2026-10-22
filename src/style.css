@@ -168,6 +168,16 @@ dd { margin: 0; min-width: 0; }
   background: #07b18d;
   border-color: #07a6a9;
 }
+#disconnect-btn {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+#disconnect-btn:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .btn:focus-visible,
 .link-btn:focus-visible,
