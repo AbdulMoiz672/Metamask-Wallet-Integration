@@ -31,10 +31,17 @@ function createMockProvider({ accounts = [ADDR_A.toLowerCase()], chainId = "0xaa
     authorized: false, // has the user approved this site yet?
     rejectConnect: null,
     switchError: null,
+    revokeError: null,
     methodsCalled: [],
     async request({ method, params }) {
       provider.methodsCalled.push(method);
       switch (method) {
+        case "wallet_revokePermissions":
+          assert.deepEqual(params, [{ eth_accounts: {} }]);
+          if (provider.revokeError) throw provider.revokeError;
+          provider.authorized = false;
+          provider.emit("accountsChanged", []);
+          return null;
         case "eth_requestAccounts":
           if (provider.rejectConnect) throw provider.rejectConnect;
           provider.authorized = true;
@@ -214,7 +221,9 @@ test("disconnect clears app state, ignores wallet events and blocks auto-reconne
   await wallet.connect();
   assert.equal(wallet.getState().status, "connected");
 
-  wallet.disconnect();
+  await wallet.disconnect();
+  assert.equal(mm.authorized, false);
+  assert.deepEqual(await mm.request({ method: "eth_accounts" }), []);
   let s = wallet.getState();
   assert.equal(s.status, "disconnected");
   assert.equal(s.account, null);
@@ -225,7 +234,7 @@ test("disconnect clears app state, ignores wallet events and blocks auto-reconne
   await settle();
   assert.equal(wallet.getState().status, "disconnected"); // still disconnected
 
-  // Reload the "page": MetaMask still lists the site as authorized, but we must not reconnect.
+  // Reload the page: the revoked permission must not reconnect.
   wallet.destroy();
   await start(mm, { storage });
   assert.equal(wallet.getState().status, "disconnected");
@@ -233,6 +242,23 @@ test("disconnect clears app state, ignores wallet events and blocks auto-reconne
   // The user explicitly reconnects.
   await wallet.connect();
   assert.equal(wallet.getState().status, "connected");
+});
+
+test("failed revocation reports the error and allows retrying disconnect", async () => {
+  const mm = createMockProvider();
+  await start(mm);
+  await wallet.connect();
+  mm.revokeError = Object.assign(new Error("User rejected"), { code: 4001 });
+  const pending = wallet.disconnect();
+  assert.equal(wallet.getState().status, "disconnecting");
+  await pending;
+  assert.equal(mm.authorized, true);
+  assert.equal(wallet.getState().status, "connected");
+  assert.match(wallet.getState().error, /Could not disconnect from MetaMask/);
+  mm.revokeError = null;
+  await wallet.disconnect();
+  assert.equal(mm.authorized, false);
+  assert.equal(wallet.getState().status, "disconnected");
 });
 
 test("silently reconnects on load if the site was already approved", async () => {
@@ -271,7 +297,7 @@ test("only uses non-secret JSON-RPC methods (never keys, seed or signing)", asyn
   await wallet.connect();
   mm.emit("chainChanged", "0x89");
   await wallet.switchNetwork(1);
-  wallet.disconnect();
+  await wallet.disconnect();
 
   const allowed = new Set([
     "eth_requestAccounts",
@@ -280,6 +306,7 @@ test("only uses non-secret JSON-RPC methods (never keys, seed or signing)", asyn
     "net_version",
     "wallet_switchEthereumChain",
     "wallet_addEthereumChain",
+    "wallet_revokePermissions",
   ]);
   for (const method of mm.methodsCalled) {
     assert.ok(allowed.has(method), `unexpected RPC method: ${method}`);

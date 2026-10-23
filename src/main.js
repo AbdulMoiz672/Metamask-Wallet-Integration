@@ -36,6 +36,7 @@ const STATUS_TEXT = {
   "no-wallet": "MetaMask not detected",
   disconnected: "Not connected",
   connecting: "Waiting for approval in MetaMask…",
+  disconnecting: "Disconnecting from MetaMask…",
   connected: "Connected",
 };
 
@@ -74,7 +75,7 @@ function renderNetworkBanner(s) {
 }
 
 function render(s) {
-  const connected = s.status === "connected";
+  const connected = s.status === "connected" || s.status === "disconnecting";
   const account = connected ? s.account : null;
   const chainId = connected ? s.chainId : null;
   const notifications = [];
@@ -113,6 +114,8 @@ function render(s) {
   el.connectBtn.disabled = s.status === "connecting" || s.status === "initializing" || s.status === "no-wallet";
   el.connectBtn.textContent = s.status === "connecting" ? "Connecting…" : "Connect Wallet";
   el.disconnectBtn.hidden = !connected;
+  el.disconnectBtn.disabled = s.status === "disconnecting";
+  el.disconnectBtn.textContent = s.status === "disconnecting" ? "Disconnecting…" : "Disconnect";
   el.installHint.hidden = s.status !== "no-wallet";
 }
 

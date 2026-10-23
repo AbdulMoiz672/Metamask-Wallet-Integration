@@ -113,13 +113,13 @@ An empty `accountsChanged` array means the wallet was locked or the user revoked
 
 ### Disconnecting
 
-A website **cannot** programmatically revoke the permission MetaMask granted it (there is no standard `provider.disconnect()` for injected wallets). So "Disconnect" here:
+The Disconnect button calls MetaMask's `wallet_revokePermissions` with `[{ eth_accounts: {} }]` to revoke this site's account access. While the request runs, the button is disabled. On success, the app:
 
 1. clears the app's connected-wallet state,
 2. remembers that choice (one non-sensitive boolean in `localStorage`) so the app doesn't silently reconnect on reload, and
 3. ignores wallet events until the user clicks Connect again.
 
-MetaMask itself still lists the site as connected until the user removes it under *Connected sites* / *Permissions* in the extension.
+If MetaMask rejects the request or does not support it, the app displays an error and keeps the connection visible so the user can retry or remove the site under *Permissions* in MetaMask.
 
 ### Changing the supported networks
 

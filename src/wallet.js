@@ -52,6 +52,7 @@ let injected = null; // raw EIP-1193 provider (window.ethereum or the EIP-6963 M
 let ethersProvider = null; // ethers wrapper around `injected`
 let storage = null;
 let handlers = null;
+let disconnectRequested = false;
 const stateListeners = new Set();
 const logListeners = new Set();
 
@@ -166,6 +167,7 @@ function discoverMetaMask(timeoutMs) {
 /** Read the chain from the wallet (through ethers) and publish a "connected" state. */
 async function applyConnection(accounts) {
   const network = await ethersProvider.getNetwork();
+  if (disconnectRequested) return;
   const chainId = Number(network.chainId);
   setState({
     status: "connected",
@@ -178,6 +180,7 @@ async function applyConnection(accounts) {
 
 export async function init({ discoveryMs = 300, storage: storageOverride } = {}) {
   storage = storageOverride ?? safeStorage();
+  disconnectRequested = userDisconnected();
   injected = await discoverMetaMask(discoveryMs);
 
   if (!injected) {
@@ -203,10 +206,12 @@ export async function init({ discoveryMs = 300, storage: storageOverride } = {})
 }
 
 export async function connect() {
+  if (state.status === "disconnecting") return;
   if (!injected) {
     setState({ status: "no-wallet", error: MESSAGES.noWallet });
     return;
   }
+  disconnectRequested = false;
   setState({ status: "connecting", error: null });
   try {
     // This is the call that opens MetaMask's "Connect with MetaMask" popup.
@@ -220,16 +225,28 @@ export async function connect() {
   }
 }
 
-/**
- * "Disconnect" only clears THIS app's state. A website cannot sever the
- * permission MetaMask granted it; the user does that in MetaMask
- * (Connected sites / Permissions). We remember the choice so the app doesn't
- * auto-reconnect on reload, and ignore wallet events until the user reconnects.
- */
-export function disconnect() {
+/** Revoke this site's account access in MetaMask, then clear the app state. */
+export async function disconnect() {
+  if (!injected || state.status !== "connected") return;
+  disconnectRequested = true;
   setUserDisconnected(true);
-  setState({ status: "disconnected", ...DISCONNECTED_FIELDS, error: null });
-  log("Disconnected in this app (MetaMask itself still lists this site as connected).");
+  setState({ status: "disconnecting", error: null });
+  try {
+    await injected.request({
+      method: "wallet_revokePermissions",
+      params: [{ eth_accounts: {} }],
+    });
+    setState({ status: "disconnected", ...DISCONNECTED_FIELDS, error: null });
+    log("Disconnected from MetaMask. This site's account permission was revoked.");
+  } catch (err) {
+    disconnectRequested = false;
+    setUserDisconnected(false);
+    setState({
+      status: "connected",
+      error: `Could not disconnect from MetaMask: ${err?.message ?? "unknown error"}. Try again or disconnect this site in MetaMask's Permissions.`,
+    });
+    log(`Disconnect failed (code ${extractCode(err) ?? "n/a"})`);
+  }
 }
 
 export async function switchNetwork(chainId) {
@@ -265,7 +282,7 @@ export async function switchNetwork(chainId) {
 
 async function onAccountsChanged(accounts) {
   log(`accountsChanged: ${accounts.length ? shortAddress(accounts[0]) : "no accounts"}`);
-  if (userDisconnected()) return; // user disconnected in the app: stay disconnected
+  if (disconnectRequested || userDisconnected()) return;
 
   if (!accounts.length) {
     // MetaMask locked, or the user removed this site's access.
@@ -297,7 +314,7 @@ function onProviderDisconnect() {
 
 async function onProviderConnect() {
   // Connection to the chain restored: silently re-sync if the user hasn't opted out.
-  if (state.status !== "disconnected" || userDisconnected()) return;
+  if (state.status !== "disconnected" || disconnectRequested || userDisconnected()) return;
   try {
     const accounts = await injected.request({ method: "eth_accounts" });
     if (accounts.length) await applyConnection(accounts);
@@ -326,6 +343,7 @@ export function destroy() {
   injected = null;
   ethersProvider = null;
   state = INITIAL_STATE;
+  disconnectRequested = false;
   stateListeners.clear();
   logListeners.clear();
 }
