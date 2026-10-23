@@ -18,7 +18,18 @@ const el = {
   disconnectBtn: $("disconnect-btn"),
   installHint: $("install-hint"),
   log: $("log"),
+  accountToast: $("account-toast"),
 };
+
+let previousAccount = null;
+let previousChainId = null;
+let toastTimer;
+
+function hideAccountToast() {
+  clearTimeout(toastTimer);
+  el.accountToast.classList.remove("is-visible");
+  el.accountToast.textContent = "";
+}
 
 const STATUS_TEXT = {
   initializing: "Checking for MetaMask…",
@@ -64,6 +75,25 @@ function renderNetworkBanner(s) {
 
 function render(s) {
   const connected = s.status === "connected";
+  const account = connected ? s.account : null;
+  const chainId = connected ? s.chainId : null;
+  const notifications = [];
+  if (previousAccount && account && previousAccount.toLowerCase() !== account.toLowerCase()) {
+    notifications.push(`Account switched to ${account.slice(0, 6)}…${account.slice(-4)}`);
+  }
+  if (previousChainId !== null && chainId !== null && previousChainId !== chainId) {
+    notifications.push(`Network switched to ${s.chainName} (Chain ID: ${chainId})`);
+  }
+  if (notifications.length) {
+    clearTimeout(toastTimer);
+    el.accountToast.textContent = notifications.join(". ");
+    el.accountToast.classList.add("is-visible");
+    toastTimer = setTimeout(hideAccountToast, 3500);
+  } else if (!account) {
+    hideAccountToast();
+  }
+  previousAccount = account;
+  previousChainId = chainId;
 
   el.pill.dataset.state = pillState(s);
   el.pill.textContent = pillLabel(s);
